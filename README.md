@@ -6,10 +6,10 @@ Sensors to be implemented henceforth a smart IOT Car.
 
 ........................................................................................................................................................................
 ## **Team Members**
- 1.*Tatenda Bako*
- 2.*Raymond Nyakudanga*
- 3.*Emmanuel Damba*
- 4.*Lawrence Takaendesa*
+ 1.*Tatenda Bako,*
+ 2.*Raymond Nyakudanga,*
+ 3.*Emmanuel Damba,*
+ 4.*Lawrence Takaendesa,*
 
  Date:- 05/04/23
  
