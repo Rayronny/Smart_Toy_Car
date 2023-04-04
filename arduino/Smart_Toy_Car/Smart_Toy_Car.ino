@@ -11,10 +11,6 @@
 #include <DabbleESP32.h>
 
 #include "BluetoothSerial.h"
-// // Check if Bluetooth configs are enabled
-// #if !defined(CONFIG_BT_ENABLED) || !defined(CONFIG_BLUEDROID_ENABLED)
-// #error Bluetooth is not enabled! Please run `make menuconfig` to and enable it
-// #endif
 
 // Bluetooth Serial object
 // BluetoothSerial SerialBT;
@@ -24,6 +20,12 @@ int MotorLeft[2] = { 19, 21 };
 int MotorRight[2] = { 22, 23 };
 #define PIN_ENA_RIGHT 14
 #define PIN_ENA_LEFT 27
+
+// ultrasonic 
+#define ULTRASONIC_SENSOR_PIN_ECHO 18
+#define ULTRASONIC_SENSOR_PIN_TRIGGER 4
+int duration;
+int distance;
 
 // variables for connecting to hotspot
 char ssid[] = "tatendaZw";
@@ -41,6 +43,10 @@ void setup() {
   Serial.begin(115200);
   // connect_to_hotspot();  // connect to hotspot
 
+  // initilise ultrasomic sensor ports
+  pinMode(ULTRASONIC_SENSOR_PIN_TRIGGER, OUTPUT); 
+  pinMode(ULTRASONIC_SENSOR_PIN_ECHO, INPUT); 
+
   // setting up enable pins
   pinMode(PIN_ENA_RIGHT, OUTPUT);
   pinMode(PIN_ENA_LEFT, OUTPUT);
@@ -56,6 +62,34 @@ void setup() {
   // SerialBT.begin("ESP32-HUB");
   // Serial.println("The device started, now you can pair it with bluetooth!");
 }
+
+// function to get disatance cleatrajce from ultrasonic
+int get_Distance() {
+  digitalWrite(ULTRASONIC_SENSOR_PIN_TRIGGER, LOW);  //set trigger signal low for 2us
+  delayMicroseconds(2);
+
+  /*send 10 microsecond pulse to trigger pin of HC-SR04 */
+  digitalWrite(ULTRASONIC_SENSOR_PIN_TRIGGER, HIGH);  // make trigger pin active high
+  delayMicroseconds(10);            // wait for 10 microseconds
+  digitalWrite(ULTRASONIC_SENSOR_PIN_TRIGGER, LOW);   // make trigger pin active low
+
+  /*Measure the Echo output signal duration or pulss width */
+  duration = pulseIn(ULTRASONIC_SENSOR_PIN_ECHO, HIGH);  // save time duration value in "duration variable
+  distance = duration * 0.034 / 2;     //Convert pulse duration into distance
+  Serial.print("Ultrasonic sensor value: ");
+  Serial.println(distance);
+
+  // if(distance<1000){
+  //   // digitalWrite(PUMP_RELAY_PORT, LOW);
+  //   // stop the toy
+  // }else if(distance>1000){
+  //   digitalWrite(PUMP_RELAY_PORT, HIGH);
+  // }
+  
+  delay(500);
+  return distance;
+}
+
 
 // html to distplay if default router port is hit
 String SendHTML() {
@@ -90,6 +124,12 @@ void loop() {
   // delay(4000);
   // Robot_Stop();
   // delay(5000);
+  int wall_distance = get_Distance();
+
+  if(wall_distance < 20){
+    Robot_Stop();    
+  }
+
   Dabble.processInput();
 
   // It will be checking which button is pressed or not? Depending upon the button pressed, output pins of the microcontroller will be set to high or low. We are using else if statement.
