@@ -11,7 +11,7 @@ Sensors to be implemented henceforth a smart IOT Car.
  3.*Emmanuel Damba,*
  4.*Lawrence Takaendesa,*
 
- Date:- 05/04/23
+ Date:- 04/04/23
  
  ..........................................................................................................................................................................
 
@@ -20,3 +20,6 @@ Sensors to be implemented henceforth a smart IOT Car.
   2. Ultrasonic for collision Detection
   3. Esp32s microcontroller
   4. DC 5V/12V
+  5. Chess 
+  6. jumber wires
+  7. DC Motors
