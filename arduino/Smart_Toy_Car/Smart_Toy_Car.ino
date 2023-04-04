@@ -5,9 +5,19 @@
  motor drive in1 an in2 on d19 and d21
 */
 #include <WiFi.h>
-#include <WiFiClient.h> // to be able to connect to connect to hotspot
-#include <WebServer.h> // to make a server in arduino
-#include <HTTPClient.h> // to be abkle to make https requests to and from client (POST, GET, PUT, DELETE)
+#include <WiFiClient.h>  // to be able to connect to connect to hotspot
+#include <WebServer.h>   // to make a server in arduino
+#include <HTTPClient.h>  // to be abkle to make https requests to and from client (POST, GET, PUT, DELETE)
+#include <DabbleESP32.h>
+
+#include "BluetoothSerial.h"
+// // Check if Bluetooth configs are enabled
+// #if !defined(CONFIG_BT_ENABLED) || !defined(CONFIG_BLUEDROID_ENABLED)
+// #error Bluetooth is not enabled! Please run `make menuconfig` to and enable it
+// #endif
+
+// Bluetooth Serial object
+// BluetoothSerial SerialBT;
 
 //pins to drive motors
 int MotorLeft[2] = { 19, 21 };
@@ -23,46 +33,98 @@ IPAddress ip;
 int currentSpeed;
 char direction[] = "";
 
-// function to connect eps32 to hotspot
-void connect_to_hotspot() {
-  WiFi.begin(ssid, pass);  //Connect to WiFi
-
-  // run loop below while trying to connect to hotspot
-  Serial.print("Connecting.");
-  while (WiFi.status() != WL_CONNECTED) {
-    delay(1000);
-    Serial.print(".");
-  }
-  Serial.println("");
-  Serial.println("IP address: ");
-  ip = WiFi.localIP();
-  Serial.println(WiFi.localIP());
-}
-
+// values for connectibng to webserver
+WebServer server(5500);  // connecting webserver on port 80
 
 void setup() {
-  Serial.begin(9600);
+  Dabble.begin("MyEsp32");
+  Serial.begin(115200);
+  // connect_to_hotspot();  // connect to hotspot
 
-  // connect to hotspot
-  connect_to_hotspot();
-  // put your setup code here, to run once:
+  // setting up enable pins
   pinMode(PIN_ENA_RIGHT, OUTPUT);
   pinMode(PIN_ENA_LEFT, OUTPUT);
+
+  // setting up motot pins
   pinMode(MotorLeft[2], OUTPUT);
   pinMode(MotorRight[2], OUTPUT);
+
+  // initializing motor
   MotorInit();
+
+  // Bluetooth device name
+  // SerialBT.begin("ESP32-HUB");
+  // Serial.println("The device started, now you can pair it with bluetooth!");
+}
+
+// html to distplay if default router port is hit
+String SendHTML() {
+  String ptr = "<!DOCTYPE html> <html>\n";
+  ptr += "<head><meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0, user-scalable=no\">\n";
+  ptr += "<title>ESP32 for hydropinics is READY!!!</title>\n";
+  ptr += "<style>html { font-family: Helvetica; display: inline-block; margin: 0px auto; text-align: center;}\n";
+  ptr += "body{margin-top: 50px;} h1 {color: #444444;margin: 50px auto 30px;}\n";
+  ptr += "p {font-size: 24px;color: #444444;margin-bottom: 10px;}\n";
+  ptr += "</style>\n";
+  ptr += "</head>\n";
+  ptr += "<body>\n";
+  ptr += "<div id=\"webpage\">\n";
+  ptr += "<h1>ESP32 for hydropinics is READY!!</h1>\n";
+  ptr += "</div>\n";
+  ptr += "</body>\n";
+  ptr += "</html>\n";
+  return ptr;
+}
+
+// default route for server
+void handle_OnConnect() {
+  server.send(200, "text/html", SendHTML());
 }
 
 void loop() {
-  // put your main code here, to run repeatedly:
-  Robot_Forward();
-  delay(4000);
-  Robot_Stop();
-  delay(1000);
-  Robot_Backward();
-  delay(4000);
-  Robot_Stop();
-  delay(5000);
+  // Robot_Forward();
+  // delay(4000);
+  // Robot_Stop();
+  // delay(1000);
+  // Robot_Backward();
+  // delay(4000);
+  // Robot_Stop();
+  // delay(5000);
+  Dabble.processInput();
+
+  // It will be checking which button is pressed or not? Depending upon the button pressed, output pins of the microcontroller will be set to high or low. We are using else if statement.
+
+
+  boolean a = GamePad.isUpPressed();
+  boolean b = GamePad.isDownPressed();
+  boolean c = GamePad.isLeftPressed();
+  boolean d = GamePad.isRightPressed();
+  boolean e = GamePad.isTrianglePressed();
+  boolean f = GamePad.isCirclePressed();
+  boolean g = GamePad.isCrossPressed();
+  boolean h = GamePad.isSquarePressed();
+
+  // move forward
+  if (a || e) {
+    Robot_Forward();
+  }
+  // Go Left condition
+  else if (d || f) {
+    Robot_Left();
+  }
+  //* Rights condition
+  else if (c || h) {
+    Robot_Right();
+  }
+
+  // Go back condition
+  else if (b || g) {
+    Robot_Backward();
+  }
+  //stop condition
+  else {
+    Robot_Stop();
+  }
 }
 
 
